@@ -61,7 +61,6 @@ function onLoadMore() {
     
     getQuerry(querry, page)
         .then(response => {
-            console.log(page);
             if (page > response.data.totalHits/response.data.hits.length) {
                 refs.loadMoreBtn.classList.add('visually-hidden');
                 Notify.warning("We're sorry, but you've reached the end of search results.",

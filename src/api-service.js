@@ -1,7 +1,5 @@
 const axios = require('axios').default;
 const BASE_URL = 'https://pixabay.com/api/';
-// let page = 1;
-
 
 export async function getQuerry(querry, page) {
 
@@ -18,7 +16,6 @@ export async function getQuerry(querry, page) {
 
     try {
         const response = await axios.get(BASE_URL, { params });
-        // page += 1;
         return response;
     } catch(error) {
     }    
