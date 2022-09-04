@@ -12,6 +12,7 @@ const refs = {
 }
 let querry = '';
 let page;
+let lightbox;
 
 
 refs.form.addEventListener('submit', onSubmit);
@@ -50,6 +51,8 @@ function onSubmit(evt) {
             renderMarkup(response);
             refs.loadMoreBtn.classList.remove('visually-hidden');
             page += 1;
+
+            lightbox = new SimpleLightbox('.gallery a');
         })        
         .catch(onQuerryError)    
 }
@@ -70,7 +73,8 @@ function onLoadMore() {
                 )                
             }
             renderMarkup(response);            
-            page += 1;            
+            page += 1;
+            lightbox.refresh();
         })
 }
 
@@ -80,12 +84,7 @@ function renderMarkup(markup) {
         throw new Error();
     }
 
-    refs.gallery.insertAdjacentHTML('beforeend', renderGalleryMarkup(markup));
-
-    let lightbox = new SimpleLightbox('.gallery a',
-        {
-            captionDelay: 250,        
-        })
+    refs.gallery.insertAdjacentHTML('beforeend', renderGalleryMarkup(markup));   
 }
 
 
