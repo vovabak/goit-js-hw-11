@@ -1,5 +1,5 @@
-import { getQuerry } from './api-service';
-import { renderGalleryMarkup } from './template';
+import { getQuerry } from './api/api-service';
+import { renderGalleryMarkup } from './templates/renderGalleryMarkup';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
@@ -13,89 +13,83 @@ const refs = {
 let querry = '';
 let page;
 let lightbox;
+const notifyParams = {
+                position: 'center-top',
+                distance: '55px',
+                showOnlyTheLastOne: true,
+            }
 
 
 refs.form.addEventListener('submit', onSubmit);
 refs.loadMoreBtn.addEventListener('click', onLoadMore);
 
 function onSubmit(evt) {
-    evt.preventDefault();    
+    evt.preventDefault();
+    
+    if (evt.currentTarget.elements.searchQuery.value === '') {        
+
+        Notify.warning("Please, enter your search query.", notifyParams)
+
+        return
+    }
+
+    if (evt.currentTarget.elements.searchQuery.value === querry) {        
+
+        Notify.warning("Please, try another search query.", notifyParams)
+
+        return
+    }
 
     querry = evt.currentTarget.elements.searchQuery.value;
     page = 1;
     refs.gallery.innerHTML = '';
+    refs.loadMoreBtn.classList.add('visually-hidden');
 
-    if (querry === '') {
-        refs.loadMoreBtn.classList.add('visually-hidden');
-
-        Notify.warning("Please, enter your search query.",
-            {
-                position: 'center-top',
-                distance: '55px',
-                showOnlyTheLastOne: true,
-            },
-            
-        )
-        return
-    }
 
     getQuerry(querry, page)
         .then(response => {            
-            Notify.success(`Hooray! We found ${response.data.totalHits} images.`,
-                    {
-                        position: 'center-top',
-                        distance: '55px',
-                        showOnlyTheLastOne: true,
-                    },
-                )
+
+            if (response.data.hits.length === 0) {
+                Notify.warning("Sorry, there are no images matching your search query. Please try again.",
+                    notifyParams);
+                return
+            }
+
             renderMarkup(response);
-            refs.loadMoreBtn.classList.remove('visually-hidden');
-            page += 1;
+
+            Notify.success(`Hooray! We found ${response.data.totalHits} images.`, notifyParams)
+            
+            if (response.data.totalHits > response.config.params.per_page) {
+                refs.loadMoreBtn.classList.remove('visually-hidden');
+            }           
 
             lightbox = new SimpleLightbox('.gallery a');
         })        
-        .catch(onQuerryError)    
+        .catch(onQuerryError)
 }
 
 function onLoadMore() {
     
-    getQuerry(querry, page)
-        .then(response => {
-            if (page > response.data.totalHits/response.data.hits.length) {
+    page += 1;
+    getQuerry(querry, page)        
+        .then(response => {            
+            if (page > response.data.totalHits/response.config.params.per_page) {
                 refs.loadMoreBtn.classList.add('visually-hidden');
+                
                 Notify.warning("We're sorry, but you've reached the end of search results.",
-                    {
-                        position: 'center-bottom',
-                        distance: '55px',
-                        showOnlyTheLastOne: true,
-                    },
-                )                
+                    notifyParams)
             }
-            renderMarkup(response);            
-            page += 1;
+            renderMarkup(response);        
+            
             lightbox.refresh();
         })
 }
 
-function renderMarkup(markup) {
-
-    if (markup.data.hits.length === 0) {
-        throw new Error();
-    }
-
-    refs.gallery.insertAdjacentHTML('beforeend', renderGalleryMarkup(markup));   
+function renderMarkup(gallery) {
+    refs.gallery.insertAdjacentHTML('beforeend', renderGalleryMarkup(gallery.data.hits));   
 }
 
 
-function onQuerryError() {
-    refs.gallery.innerHTML = '';
-    refs.loadMoreBtn.classList.add('visually-hidden');
-    Notify.warning("Sorry, there are no images matching your search query. Please try again.",
-            {
-                position: 'center-top',
-                distance: '55px',
-                showOnlyTheLastOne: true,
-            },
-    )
-    
+function onQuerryError() {    
+    Notify.failure("Woops, something went wrong. Please, keep calm and do your job", notifyParams)    
 }

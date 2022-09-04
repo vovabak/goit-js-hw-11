@@ -1,6 +1,5 @@
-export function renderGalleryMarkup(murkup) {
-    const photos = murkup.data.hits;
-
+export function renderGalleryMarkup(photos) {
+    
     const markup = photos.map(photo =>
         `<div class="photo-card">
             <a href="${photo.largeImageURL}">
