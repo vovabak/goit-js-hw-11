@@ -17,8 +17,7 @@ const notifyParams = {
                 position: 'center-top',
                 distance: '55px',
                 showOnlyTheLastOne: true,
-            }
-
+}
 
 refs.form.addEventListener('submit', onSubmit);
 refs.loadMoreBtn.addEventListener('click', onLoadMore);
@@ -61,7 +60,16 @@ function onSubmit(evt) {
             
             if (response.data.totalHits > response.config.params.per_page) {
                 refs.loadMoreBtn.classList.remove('visually-hidden');
-            }           
+            }
+
+            const { height: cardHeight } = document
+                .querySelector(".gallery")
+                .firstElementChild.getBoundingClientRect();
+
+            window.scrollBy({
+                top: cardHeight * 0.13,
+                behavior: "smooth",
+            });
 
             lightbox = new SimpleLightbox('.gallery a');
         })        
