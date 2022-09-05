@@ -26,21 +26,21 @@ refs.loadMoreBtn.addEventListener('click', onLoadMore);
 function onSubmit(evt) {
     evt.preventDefault();
     
-    if (evt.currentTarget.elements.searchQuery.value === '') {        
+    if (evt.currentTarget.elements.searchQuery.value.trim() === '') {        
 
         Notify.warning("Please, enter your search query.", notifyParams)
 
         return
     }
 
-    if (evt.currentTarget.elements.searchQuery.value === querry) {        
+    if (evt.currentTarget.elements.searchQuery.value.trim() === querry) {        
 
         Notify.warning("Please, try another search query.", notifyParams)
 
         return
     }
 
-    querry = evt.currentTarget.elements.searchQuery.value;
+    querry = evt.currentTarget.elements.searchQuery.value.trim();
     page = 1;
     refs.gallery.innerHTML = '';
     refs.loadMoreBtn.classList.add('visually-hidden');
