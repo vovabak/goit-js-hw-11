@@ -62,14 +62,12 @@ function onSubmit(evt) {
                 refs.loadMoreBtn.classList.remove('visually-hidden');
             }
 
-            const { height: cardHeight } = document
-                .querySelector(".gallery")
-                .firstElementChild.getBoundingClientRect();
+            const { height: cardHeight } = refs.form.getBoundingClientRect();
 
-            window.scrollBy({
-                top: cardHeight * 0.13,
+            window.scrollBy({                
+                top: cardHeight,
                 behavior: "smooth",
-            });
+            });            
 
             lightbox = new SimpleLightbox('.gallery a');
         })        
