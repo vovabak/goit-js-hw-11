@@ -25,11 +25,13 @@ const infiniteScrollOptions = {
     threshold: 1.0
 }
 
-const observer = new IntersectionObserver(scrollCallBack, infiniteScrollOptions);
+const observer = new IntersectionObserver(loadMore, infiniteScrollOptions);
 let target;
 
+const lastElementObserver = new IntersectionObserver(lastElscrollCallBack, infiniteScrollOptions);
+
 refs.form.addEventListener('submit', onSubmit);
-// refs.loadMoreBtn.addEventListener('click', onLoadMore);
+// refs.loadMoreBtn.addEventListener('click', onLoadMoreBtn);
 
 function onSubmit(evt) {
     evt.preventDefault();
@@ -90,42 +92,59 @@ function onSubmit(evt) {
         .catch(onQuerryError)
 }
 
-function scrollCallBack(entries, observer) {
-
-    // const arr = observer.takeRecords();
-    // console.log(arr);
-    // console.log(entries[0]);
-    // console.log(entries[0].isIntersecting);    
-    // if (entries[0].intersectionRatio <= 0) return;
+function loadMore(entries, observer) {
     
-
-    if (entries[0].isIntersecting) {
-        onLoadMore();
-    };
-
-    target = refs.gallery.lastElementChild;
-    observer.observe(target);
-}
-
-function onLoadMore() {
+    if (entries[0].intersectionRatio <= 0) return;
     
+    observer.disconnect();
     page += 1;
-    getQuerry(querry, page)        
-        .then(response => {            
-            if (page > response.data.totalHits/response.config.params.per_page) {
-                // refs.loadMoreBtn.classList.add('visually-hidden');
-                // observer.unobserve(target);
 
-                Notify.warning("We're sorry, but you've reached the end of search results.",
-                    notifyOptions)                
+    getQuerry(querry, page)
+        .then(response => {            
+
+            renderMarkup(response);
+            
+            target = refs.gallery.lastElementChild;
+            observer.observe(target);
+            
+            lightbox.refresh();
+
+            if (page > response.data.totalHits / response.config.params.per_page) {                
+                
+                lastElementObserver.observe(target);
                 
                 observer.disconnect();
-            }
-            renderMarkup(response);            
-            
-            lightbox.refresh();            
-        })    
+            }            
+        })
+        .catch(onQuerryError);
 }
+
+function lastElscrollCallBack(entries, lastElementObserver) {
+    if (entries[0].intersectionRatio <= 0) return;
+        
+    Notify.warning("We're sorry, but you've reached the end of search results.",
+                        notifyOptions);
+    lastElementObserver.disconnect();
+}
+
+// function onLoadMoreBtn() {
+    
+//     page += 1;
+//     getQuerry(querry, page)        
+//         .then(response => {           
+
+//             renderMarkup(response);            
+            
+//             lightbox.refresh();
+
+//             if (page > response.data.totalHits/response.config.params.per_page) {
+//                 refs.loadMoreBtn.classList.add('visually-hidden');
+                
+//                 Notify.warning("We're sorry, but you've reached the end of search results.",
+//                     notifyOptions);                
+//             }                       
+//         })    
+// }
 
 function renderMarkup(gallery) {
     refs.gallery.insertAdjacentHTML('beforeend', renderGalleryMarkup(gallery.data.hits));   

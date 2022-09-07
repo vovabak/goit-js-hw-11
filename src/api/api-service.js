@@ -14,10 +14,7 @@ export async function getQuerry(q, page) {
         per_page: 40,
         page,
     }
-
-    try {
-        const response = await axios.get(BASE_URL, { params });
-        return response;
-    } catch(error) {
-    }    
+  
+    const response = await axios.get(BASE_URL, { params });
+    return response;    
 }
